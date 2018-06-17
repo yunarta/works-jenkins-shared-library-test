@@ -8,7 +8,8 @@ def call() {
     try {
         VersionNumber a = VersionNumber.parse("1.0.0-pa-0")
         VersionNumber b = VersionNumber.parse("1.0.0-pa-2")
-        println(a.compareTo(b))
+        def compare = a.compareTo(b)
+        println("compare = ${compare}")
     } catch (exception) {
         exception.printStackTrace()
     }
