@@ -1,9 +1,44 @@
+/*
+ * Copyright 2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.gradle.util
 
 @Grab('com.google.collections:google-collections:1.0')
 import com.google.common.collect.Ordering
 
-class VersionNumber implements Comparable<VersionNumber>, Serializable {
+/**
+ * Represents, parses, and compares version numbers. Supports a couple of different schemes: <ul> <li>MAJOR.MINOR.MICRO-QUALIFIER (the default).</li> <li>MAJOR.MINOR.MICRO.PATCH-QUALIFIER.</li> </ul>
+ *
+ * Groovy version of https://github.com/gradle/gradle/blob/master/subprojects/core/src/main/java/org/gradle/util/VersionNumber.java
+ *
+ * <p>The {@link #parse} method handles missing parts and allows "." to be used instead of "-", and "_" to be used instead of "." for the patch number.
+ *
+ * <p>This class considers missing parts to be 0, so that "1.0" == "1.0.0" == "1.0.0_0".</p>
+ *
+ * <p>Note that this class considers "1.2.3-something" less than "1.2.3". Qualifiers are compared lexicographically ("1.2.3-alpha" < "1.2.3-beta") and case-insensitive ("1.2.3-alpha" <
+ * "1.2.3.RELEASE").
+ *
+ * <p>To check if a version number is at least "1.2.3", disregarding a potential qualifier like "beta", use {@code version.getBaseVersion ( ) .compareTo ( VersionNumber.parse ( " 1.2.3 " ) ) >= 0}.
+ */
+public class VersionNumber implements Comparable<VersionNumber>, Serializable {
+    private static final DefaultScheme DEFAULT_SCHEME() { return new DefaultScheme() }
+
+    private static final SchemeWithPatchVersion PATCH_SCHEME() { return new SchemeWithPatchVersion() }
+
+    public static final VersionNumber UNKNOWN() { version(0) }
 
     private final int major
     private final int minor
@@ -13,15 +48,14 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
     private final AbstractScheme scheme
 
     public VersionNumber(int major, int minor, int micro, String qualifier) {
-        this(major, minor, micro, 0, qualifier, new DefaultScheme())
+        this(major, minor, micro, 0, qualifier, DEFAULT_SCHEME())
     }
 
     public VersionNumber(int major, int minor, int micro, int patch, String qualifier) {
-        this(major, minor, micro, patch, qualifier, new SchemeWithPatchVersion())
+        this(major, minor, micro, patch, qualifier, PATCH_SCHEME())
     }
 
-    private VersionNumber(int major, int minor, int micro, int patch,
-                          String qualifier, AbstractScheme scheme) {
+    private VersionNumber(int major, int minor, int micro, int patch, String qualifier, AbstractScheme scheme) {
         this.major = major
         this.minor = minor
         this.micro = micro
@@ -30,97 +64,93 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
         this.scheme = scheme
     }
 
-    int getMajor() {
+    public int getMajor() {
         return major
     }
 
-    int getMinor() {
+    public int getMinor() {
         return minor
     }
 
-    int getMicro() {
+    public int getMicro() {
         return micro
     }
 
-    int getPatch() {
+    public int getPatch() {
         return patch
     }
 
-    String getQualifier() {
+    public String getQualifier() {
         return qualifier
     }
 
-    VersionNumber getBaseVersion() {
+    public VersionNumber getBaseVersion() {
         return new VersionNumber(major, minor, micro, patch, null, scheme)
     }
 
-    int compareTo(VersionNumber other) {
-//        if (major != other.major) {
-//            return major - other.major
-//        }
-//        if (minor != other.minor) {
-//            return minor - other.minor
-//        }
-//        if (micro != other.micro) {
-//            return micro - other.micro
-//        }
-//        if (patch != other.patch) {
-//            return patch - other.patch
-//        }
-        def last = Ordering.natural().nullsLast()
-        println(last)
-
+    public int compareTo(VersionNumber other) {
+        if (major != other.major) {
+            return major - other.major
+        }
+        if (minor != other.minor) {
+            return minor - other.minor
+        }
+        if (micro != other.micro) {
+            return micro - other.micro
+        }
+        if (patch != other.patch) {
+            return patch - other.patch
+        }
         return Ordering.natural().nullsLast().compare(toLowerCase(qualifier), toLowerCase(other.qualifier))
     }
 
-    boolean equals(Object other) {
+    public boolean equals(Object other) {
         return other instanceof VersionNumber && compareTo((VersionNumber) other) == 0
     }
 
-    int hashCode() {
+    public int hashCode() {
         int result = major
         result = 31 * result + minor
         result = 31 * result + micro
         result = 31 * result + patch
-        result = 31 * result + Objects.hashCode(qualifier)
+        result = 31 * result + qualifier.hashCode()
         return result
     }
 
-    String toString() {
+    public String toString() {
         return scheme.format(this)
     }
 
-    static VersionNumber version(int major) {
-        return new VersionNumber(major, 0, 0, 0, null, new DefaultScheme())
+    public static VersionNumber version(int major) {
+        return new VersionNumber(major, 0, 0, 0, null, DEFAULT_SCHEME())
     }
 
     /**
      * Returns the default MAJOR.MINOR.MICRO-QUALIFIER scheme.
      */
-    static Scheme scheme() {
-        return new DefaultScheme()
+    public static Scheme scheme() {
+        return DEFAULT_SCHEME()
     }
 
     /**
      * Returns the MAJOR.MINOR.MICRO.PATCH-QUALIFIER scheme.
      */
-    static Scheme withPatchNumber() {
-        return new SchemeWithPatchVersion()
+    public static Scheme withPatchNumber() {
+        return PATCH_SCHEME()
     }
 
-    static def parse(String versionString) {
-        return new DefaultScheme().parse(versionString)
+    public static VersionNumber parse(String versionString) {
+        return DEFAULT_SCHEME().parse(versionString)
     }
 
     private String toLowerCase(String string) {
         return string == null ? null : string.toLowerCase()
     }
 
-    interface Scheme extends Serializable {
+    public interface Scheme extends Serializable {
+        public VersionNumber parse(String value)
 
-        VersionNumber parse(String value)
-
-        String format(VersionNumber versionNumber)
+        public String format(VersionNumber versionNumber)
     }
 
     private abstract static class AbstractScheme implements Scheme {
@@ -130,9 +160,9 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
             this.depth = depth
         }
 
-        VersionNumber parse(String versionString) {
+        public VersionNumber parse(String versionString) {
             if (versionString == null || versionString.length() == 0) {
-                return version(0)
+                return UNKNOWN()
             }
             Scanner scanner = new Scanner(versionString)
 
@@ -142,9 +172,8 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
             int patch = 0
 
             if (!scanner.hasDigit()) {
-                return version(0)
+                return UNKNOWN()
             }
-
             major = scanner.scanDigit()
             if (scanner.isSeparatorAndDigit('.' as char)) {
                 scanner.skipSeparator()
@@ -168,7 +197,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
                 return new VersionNumber(major, minor, micro, patch, scanner.remainder(), this)
             }
 
-            return version(0)
+            return UNKNOWN()
         }
 
         private static class Scanner {
@@ -210,7 +239,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
                 return Integer.parseInt(str.substring(start, pos))
             }
 
-            boolean isEnd() {
+            public boolean isEnd() {
                 return pos == str.length()
             }
 
@@ -222,11 +251,11 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
                 return false
             }
 
-            void skipSeparator() {
+            public void skipSeparator() {
                 pos++
             }
 
-            String remainder() {
+            public String remainder() {
                 return pos == str.length() ? null : str.substring(pos)
             }
         }
@@ -235,11 +264,11 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
     private static class DefaultScheme extends AbstractScheme {
         private static final String VERSION_TEMPLATE = "%d.%d.%d%s"
 
-        DefaultScheme() {
+        public DefaultScheme() {
             super(3)
         }
 
-        String format(VersionNumber versionNumber) {
+        public String format(VersionNumber versionNumber) {
             return String.format(VERSION_TEMPLATE, versionNumber.major, versionNumber.minor, versionNumber.micro, versionNumber.qualifier == null ? "" : "-" + versionNumber.qualifier)
         }
     }
@@ -251,8 +280,9 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
             super(4)
         }
 
-        String format(VersionNumber versionNumber) {
+        public String format(VersionNumber versionNumber) {
             return String.format(VERSION_TEMPLATE, versionNumber.major, versionNumber.minor, versionNumber.micro, versionNumber.patch, versionNumber.qualifier == null ? "" : "-" + versionNumber.qualifier)
         }
     }
+
 }
