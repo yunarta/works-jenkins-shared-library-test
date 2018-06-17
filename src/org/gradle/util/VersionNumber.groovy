@@ -1,5 +1,8 @@
 package org.gradle.util
 
+@Grab('com.google.collections:google-collections:1.0')
+import com.google.common.collect.Ordering
+
 class VersionNumber implements Comparable<VersionNumber>, Serializable {
 
     private final int major
@@ -66,7 +69,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
 //        }
         def last = Ordering.natural().nullsLast()
         println(last)
-        
+
         return Ordering.natural().nullsLast().compare(toLowerCase(qualifier), toLowerCase(other.qualifier))
     }
 
