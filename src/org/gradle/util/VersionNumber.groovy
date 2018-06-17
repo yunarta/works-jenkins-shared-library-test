@@ -66,6 +66,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
 //        }
         def last = Ordering.natural().nullsLast()
         println(last)
+        
         return Ordering.natural().nullsLast().compare(toLowerCase(qualifier), toLowerCase(other.qualifier))
     }
 
