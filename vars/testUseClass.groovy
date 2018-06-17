@@ -2,8 +2,8 @@ import com.mobilesolutionworks.test.TestClass
 import org.gradle.util.VersionNumber
 
 def call() {
-//    def object = new TestClass()
-//    println(object)
+    def object = new TestClass()
+    println(object)
 
     try {
         def version = VersionNumber.parse("1.0.0-pa-0")

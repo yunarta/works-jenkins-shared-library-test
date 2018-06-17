@@ -107,7 +107,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
 
     @NonCPS
     static def parse(String versionString) {
-        return VersionNumber(1,2,3,"alpha-1")
+        return VersionNumber(1, 2, 3, "alpha-1")
 //        return DEFAULT_SCHEME.parse(versionString)
     }
 
@@ -115,7 +115,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
         return string == null ? null : string.toLowerCase()
     }
 
-    interface Scheme {
+    interface Scheme extends Serializable {
 
         VersionNumber parse(String value)
 
