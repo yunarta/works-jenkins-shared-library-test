@@ -1,4 +1,4 @@
 package com.mobilesolutionworks.test
 
-class TestClass {
+class TestClass implements Serializable {
 }
