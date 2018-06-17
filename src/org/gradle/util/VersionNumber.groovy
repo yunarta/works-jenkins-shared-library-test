@@ -52,18 +52,18 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
     }
 
     int compareTo(VersionNumber other) {
-        if (major != other.major) {
-            return major - other.major
-        }
-        if (minor != other.minor) {
-            return minor - other.minor
-        }
-        if (micro != other.micro) {
-            return micro - other.micro
-        }
-        if (patch != other.patch) {
-            return patch - other.patch
-        }
+//        if (major != other.major) {
+//            return major - other.major
+//        }
+//        if (minor != other.minor) {
+//            return minor - other.minor
+//        }
+//        if (micro != other.micro) {
+//            return micro - other.micro
+//        }
+//        if (patch != other.patch) {
+//            return patch - other.patch
+//        }
         def last = Ordering.natural().nullsLast()
         println(last)
         return Ordering.natural().nullsLast().compare(toLowerCase(qualifier), toLowerCase(other.qualifier))
