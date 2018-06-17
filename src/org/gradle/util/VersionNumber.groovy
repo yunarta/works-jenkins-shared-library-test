@@ -128,6 +128,7 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
         }
 
         VersionNumber parse(String versionString) {
+            return UNKNOWN
             if (versionString == null || versionString.length() == 0) {
                 return UNKNOWN
             }
