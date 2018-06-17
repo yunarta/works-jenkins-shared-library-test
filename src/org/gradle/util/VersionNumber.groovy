@@ -1,6 +1,6 @@
 package org.gradle.util
 
-class VersionNumber implements Comparable<VersionNumber> {
+class VersionNumber implements Comparable<VersionNumber>, Serializable {
     private static final DefaultScheme DEFAULT_SCHEME = new DefaultScheme()
     private static final SchemeWithPatchVersion PATCH_SCHEME = new SchemeWithPatchVersion()
     public static final VersionNumber UNKNOWN = version(0)
