@@ -64,6 +64,8 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
         if (patch != other.patch) {
             return patch - other.patch
         }
+        def last = Ordering.natural().nullsLast()
+        println(last)
         return Ordering.natural().nullsLast().compare(toLowerCase(qualifier), toLowerCase(other.qualifier))
     }
 
@@ -249,5 +251,4 @@ class VersionNumber implements Comparable<VersionNumber>, Serializable {
             return String.format(VERSION_TEMPLATE, versionNumber.major, versionNumber.minor, versionNumber.micro, versionNumber.patch, versionNumber.qualifier == null ? "" : "-" + versionNumber.qualifier)
         }
     }
-
 }
